@@ -1,19 +1,31 @@
 use cp_rs::io::*;
 fn main() {
+    // Custom scanner like I/O handler
     let mut io = Io::from_file("day1.txt");
 
-    let mut nums = vec![];
+    // Vector with the sums of calories per Elf
+    let mut sums: Vec<usize> = vec![];
+
+    // Iterate through every Elf
     for mut block in io.blocks() {
-        let mut res: isize = 0;
-        for num in block.nums::<isize>() {
+        // Count the calories per Elf
+        let mut res: usize = 0;
+        for num in block.nums::<usize>() {
             res += num;
         }
-        nums.push(res);
+        // Add the count to the sums list
+        sums.push(res);
     }
-    nums.sort();
-    let len = nums.len();
+
+    // Sort the list in reverse order -> most calories will be at first
+    sums.sort();
+    sums.reverse();
+
     io.write("Part 1: ");
-    io.writeln(nums[len - 1]);
+    // Print most calories
+    io.writeln(sums[0]);
+
     io.write("Part 2: ");
-    io.writeln(nums[len - 1] + nums[len - 2] + nums[len -3]);
+    // Print sum of top 3 calories
+    io.writeln(sums[0..3].iter().sum::<usize>());
 }
