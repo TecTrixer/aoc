@@ -1,0 +1,16 @@
+[package]
+name = "aoc"
+version = "0.1.0"
+edition = "2021"
+default-run = "day1"
+
+[[bin]]
+name = "template"
+path = "src/template.rs"
+
+[[bin]]
+name = "day1"
+path = "src/day1.rs"
+
+[dependencies]
+cp-rs = { version = "*", git = "https://github.com/tectrixer/cp-rs" }
