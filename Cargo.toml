@@ -26,3 +26,22 @@ path = "src/day4.rs"
 
 [dependencies]
 cp-rs = { version = "*", git = "https://github.com/tectrixer/cp-rs" }
+
+[dev-dependencies]
+criterion = "*"
+
+[[bench]]
+name = "day1"
+harness = false
+
+[[bench]]
+name = "day2"
+harness = false
+
+[[bench]]
+name = "day3"
+harness = false
+
+[[bench]]
+name = "day4"
+harness = false

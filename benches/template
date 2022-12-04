@@ -1,0 +1,17 @@
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use cp_rs::io::*;
+
+fn bench(input: String) -> String {
+    let mut output = Vec::new();
+    {
+        let mut io = Io::with_reader_and_writer(input.as_bytes(), &mut output);
+    }
+    std::str::from_utf8(output.as_slice()).unwrap().to_string()
+}
+
+fn benchmark(c: &mut Criterion) {
+    c.bench_function("dayX", |b| b.iter(|| bench(black_box(include_str!("../dayX.txt").to_string()))));
+}
+
+criterion_group!(benches, benchmark);
+criterion_main!(benches);
