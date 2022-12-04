@@ -3,15 +3,11 @@ fn main() {
     let mut io = Io::from_file("day4.txt");
     let mut res1 = 0;
     let mut res2 = 0;
-    for r in io.nums::<isize>().chunks(4) {
-        let fl = r[0];
-        let fr = r[1] * -1;
-        let sl = r[2];
-        let sr = r[3] * -1;
-        if fl <= sl && fr >= sr || fl >= sl && fr <= sr {
+    for r in io.pnums::<isize>().chunks(4) {
+        if r[0] <= r[2] && r[1] >= r[3] || r[0] >= r[2] && r[1] <= r[3] {
             res1 += 1;
         }
-        if fl <= sl && fr >= sl || fl >= sl && fl <= sr {
+        if r[0] <= r[2] && r[1] >= r[2] || r[0] >= r[2] && r[0] <= r[3] {
             res2 += 1;
         }
     }
