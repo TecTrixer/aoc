@@ -5,23 +5,22 @@ fn bench(input: String) -> String {
     let mut output = Vec::new();
     {
         let mut io = Io::with_reader_and_writer(input.as_bytes(), &mut output);
-        let mut last = vec![];
+        let string = io.chars();
+        let mut last = 0;
         let mut res1 = usize::MAX;
         let mut res2 = usize::MAX;
-        for (i, c) in io.chars().iter().enumerate() {
-            for idx in 0..last.len() {
-                if last[idx] == c {
-                    for _ in 0..=idx {
-                        last.remove(0);
-                    }
+        for (i, c) in string.iter().enumerate() {
+            for idx in last..i {
+                if string[idx] == *c {
+                    last = idx + 1;
                     break;
                 }
             }
-            last.push(c);
-            if last.len() >= 4 && i + 1 < res1 {
+            let len = i - last + 1;
+            if len >= 4 && i + 1 < res1 {
                 res1 = i + 1;
             }
-            if last.len() >= 14 {
+            if len >= 14 {
                 res2 = i + 1;
                 break;
             }
