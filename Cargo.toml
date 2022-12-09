@@ -2,7 +2,7 @@
 name = "aoc"
 version = "0.1.0"
 edition = "2021"
-default-run = "day8"
+default-run = "day9"
 
 [[bin]]
 name = "template"
@@ -40,8 +40,12 @@ path = "src/day7.rs"
 name = "day8"
 path = "src/day8.rs"
 
+[[bin]]
+name = "day9"
+path = "src/day9.rs"
+
 [dependencies]
-cp-rs = { version = "*", git = "https://github.com/tectrixer/cp-rs" }
+cp-rs = { version = "*", path = "../cp-rs" }
 
 [dev-dependencies]
 criterion = "*"
@@ -76,4 +80,8 @@ harness = false
 
 [[bench]]
 name = "day8"
+harness = false
+
+[[bench]]
+name = "day9"
 harness = false
