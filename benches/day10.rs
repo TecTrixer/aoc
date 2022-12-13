@@ -1,11 +1,10 @@
 use cp_rs::io::*;
 use criterion::{criterion_group, criterion_main, Criterion};
 
-fn bench() -> String {
-    let mut output = Vec::new();
-    {
+fn bench() {
         let input = std::fs::File::open("day10.txt").unwrap();
-        let mut io = Io::with_reader_and_writer(input, &mut output);
+        let mut stdout = std::io::stdout();
+        let mut io = Io::with_reader_and_writer(input, &mut stdout);
         let all = io.read_all();
         let input: &[u8] = all.as_bytes();
         let mut res = 0;
@@ -40,9 +39,6 @@ fn bench() -> String {
         io.nl();
         io.write("Part 1: ");
         io.writeln(res);
-    }
-    let res = unsafe { std::str::from_utf8_unchecked(output.as_slice()) }.to_string();
-    res
 }
 
 fn benchmark(c: &mut Criterion) {
@@ -54,7 +50,7 @@ fn benchmark(c: &mut Criterion) {
 criterion_group!(benches, benchmark);
 criterion_main!(benches);
 
-fn draw(io: &mut Io<std::fs::File, &mut Vec<u8>>, reg: isize, cycle: usize) {
+fn draw(io: &mut Io<std::fs::File, &mut std::io::Stdout>, reg: isize, cycle: usize) {
     let col = (cycle - 1) % 40;
     if col == 0 {
         io.nl();
