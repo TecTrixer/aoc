@@ -1,41 +1,57 @@
 use cp_rs::io::*;
-fn main() {
-    let mut io = Io::from_file("day13.txt");
-    let mut res = 0;
-    let mut idx = 0;
-    let mut list = vec![];
-    for mut block in io.blocks() {
-        let first = block.read_line().chars().collect::<Vec<char>>();
-        let first_entry = parse(&first[..]).0;
-        let sec = block.read_line().chars().collect::<Vec<char>>();
-        let sec_entry = parse(&sec[..]).0;
-        if let Some(o) = first_entry.partial_cmp(&sec_entry) {
-            if o == std::cmp::Ordering::Less {
-                res += idx + 1;
+use criterion::{criterion_group, criterion_main, Criterion};
+
+fn bench() -> String {
+    let mut output = Vec::new();
+    {
+        let file = std::fs::File::open("day13.txt").unwrap();
+        let mut io = Io::with_reader_and_writer(file, &mut output);
+        let mut res = 0;
+        let mut idx = 0;
+        let mut list = vec![];
+        for mut block in io.blocks() {
+            let first = block.read_line().chars().collect::<Vec<char>>();
+            let first_entry = parse(&first[..]).0;
+            let sec = block.read_line().chars().collect::<Vec<char>>();
+            let sec_entry = parse(&sec[..]).0;
+            if let Some(o) = first_entry.partial_cmp(&sec_entry) {
+                if o == std::cmp::Ordering::Less {
+                    res += idx + 1;
+                }
+            }
+            list.push(first_entry);
+            list.push(sec_entry);
+            idx += 1;
+        }
+        let div1 = Entry::List(vec![Entry::List(vec![Entry::Num(2)])]);
+        let div2 = Entry::List(vec![Entry::List(vec![Entry::Num(6)])]);
+        let mut smaller1 = 1;
+        let mut smaller2 = 2;
+        for x in list.iter() {
+            if x.partial_cmp(&div1) == Some(std::cmp::Ordering::Less) {
+                smaller1 += 1;
+            }
+            if x.partial_cmp(&div2) == Some(std::cmp::Ordering::Less) {
+                smaller2 += 1;
             }
         }
-        list.push(first_entry);
-        list.push(sec_entry);
-        idx += 1;
+        let res2 = smaller1 * smaller2;
+        io.write("Part 1: ");
+        io.writeln(res);
+        io.write("Part 2: ");
+        io.writeln(res2);
     }
-    let div1 = Entry::List(vec![Entry::List(vec![Entry::Num(2)])]);
-    let div2 = Entry::List(vec![Entry::List(vec![Entry::Num(6)])]);
-    let mut smaller1 = 1;
-    let mut smaller2 = 2;
-    for x in list.iter() {
-        if x.partial_cmp(&div1) == Some(std::cmp::Ordering::Less) {
-            smaller1 += 1;
-        }
-        if x.partial_cmp(&div2) == Some(std::cmp::Ordering::Less) {
-            smaller2 += 1;
-        }
-    }
-    let res2 = smaller1 * smaller2;
-    io.write("Part 1: ");
-    io.writeln(res);
-    io.write("Part 2: ");
-    io.writeln(res2);
+    std::str::from_utf8(output.as_slice()).unwrap().to_string()
 }
+
+fn benchmark(c: &mut Criterion) {
+    c.bench_function("day13", |b| {
+        b.iter(|| bench())
+    });
+}
+
+criterion_group!(benches, benchmark);
+criterion_main!(benches);
 
 fn parse(input: &[char]) -> (Entry, usize) {
     let mut element = vec![];
