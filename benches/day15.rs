@@ -44,96 +44,45 @@ fn bench() {
         idx += 1;
     }
     res1 -= beacons.len() as isize;
-    let mut y = 0;
-    for i in 0..=SIZE {
-        let mut res = 0;
-        let mut ranges = vec![];
-        for (sx, sy, bx, by) in input.iter() {
-            let dist = (bx - sx).abs() + (by - sy).abs();
-            let ydist = (i - sy).abs();
-            if dist >= ydist {
-                let newstart = sx - (dist - ydist);
-                let newend = sx + (dist - ydist);
-                ranges.push((newstart, newend));
-            }
-        }
-        ranges.sort_by(|(a, b), (c, d)| match a.cmp(c) {
-            std::cmp::Ordering::Equal => return b.cmp(d),
-            x => return x,
-        });
-        let mut idx = 0;
-        let mut until = ranges[0].0 - 1;
-        while idx < ranges.len() {
-            let (mut a, mut b) = ranges[idx];
-            a = if a > SIZE { SIZE } else { a };
-            a = if a < 0 { 0 } else { a };
-            b = if b > SIZE { SIZE } else { b };
-            b = if b < 0 { 0 } else { b };
-            let mut size = b - a + 1;
-            if a <= until {
-                size -= until - a + 1;
-            }
-            until = if b > until { b } else { until };
-            if size >= 0 {
-                res += size;
-            }
-            idx += 1;
-        }
-        if res < SIZE + 1 {
-            y = i;
-            break;
-        }
-    }
-    let mut x = 0;
-    for i in 0..=SIZE {
-        let mut res = 0;
-        let mut ranges = vec![];
-        for (sx, sy, bx, by) in input.iter() {
-            let dist = (bx - sx).abs() + (by - sy).abs();
-            let xdist = (i - sx).abs();
-            if dist >= xdist {
-                let newstart = sy - (dist - xdist);
-                let newend = sy + (dist - xdist);
-                ranges.push((newstart, newend));
-            }
-        }
-        ranges.sort_by(|(a, b), (c, d)| match a.cmp(c) {
-            std::cmp::Ordering::Equal => return b.cmp(d),
-            x => return x,
-        });
-        let mut idx = 0;
-        let mut until = ranges[0].0 - 1;
-        while idx < ranges.len() {
-            let (mut a, mut b) = ranges[idx];
-            a = if a > SIZE { SIZE } else { a };
-            a = if a < 0 { 0 } else { a };
-            b = if b > SIZE { SIZE } else { b };
-            b = if b < 0 { 0 } else { b };
-            let mut size = b - a + 1;
-            if a <= until {
-                size -= until - a + 1;
-            }
-            until = if b > until { b } else { until };
-            if size >= 0 {
-                res += size;
-            }
-            idx += 1;
-        }
-        if res < SIZE + 1 {
-            x = i;
-            break;
-        }
-    }
     io.write("Part 1: ");
     io.writeln(res1);
+    let mut x = 0;
+    let mut y = 0;
+    let mut pos = vec![];
+    let mut set = vec![];
+
+    for row in 0..=SIZE {
+        unsafe { pos.set_len(0) };
+        unsafe { set.set_len(0) };
+        for (sx, sy, bx, by) in input.iter() {
+            let dist = (bx - sx).abs() + (by - sy).abs();
+            let ydist = (row - sy).abs();
+            let r = dist - ydist;
+            if r < 0 {
+                continue;
+            }
+            let newstart = sx - (dist - ydist);
+            let newend = sx + (dist - ydist);
+            pos.push((newstart, newend));
+            set.push(newstart - 1);
+            set.push(newend + 1);
+        }
+        'outer: for i in set.iter() {
+            for (a, b) in pos.iter() {
+                if *i < 0 || *i > SIZE || (i >= a && i <= b) {
+                    continue 'outer;
+                }
+            }
+            x = *i;
+            y = row;
+        }
+    }
     io.write("Part 2: ");
     io.writeln(x * 4000000 + y);
 }
 
 fn benchmark(c: &mut Criterion) {
-    c.bench_function("day15", |b| {
-        b.iter(|| bench())
-    });
+    c.bench_function("day15", |b| b.iter(|| bench()));
 }
 
 criterion_group!(benches, benchmark);
