@@ -1,7 +1,9 @@
-use std::collections::HashSet;
 use cp_rs::io::*;
+use criterion::{criterion_group, criterion_main, Criterion};
+use std::collections::HashSet;
+
 const SIZE: isize = 4000000;
-fn main() {
+fn bench() {
     let mut io = Io::from_file("day15.txt");
     let mut input = vec![];
     for nums in io.nums().chunks(4) {
@@ -127,3 +129,12 @@ fn main() {
     io.write("Part 2: ");
     io.writeln(x * 4000000 + y);
 }
+
+fn benchmark(c: &mut Criterion) {
+    c.bench_function("day15", |b| {
+        b.iter(|| bench())
+    });
+}
+
+criterion_group!(benches, benchmark);
+criterion_main!(benches);
