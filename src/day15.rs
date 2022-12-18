@@ -86,7 +86,6 @@ fn main() {
     bottoms.sort_by(|a, b| a.partial_cmp(b).unwrap() );
     let mut idxt = 0;
     let mut idxb = 0;
-    let mut lastx = 0;
     io.writedln(&bottoms);
     while idxt < tops.len() && idxb < bottoms.len() {
         let top = &tops[idxt];
