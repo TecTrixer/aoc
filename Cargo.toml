@@ -2,7 +2,7 @@
 name = "aoc"
 version = "0.1.0"
 edition = "2021"
-default-run = "day18"
+default-run = "day19"
 
 [[bin]]
 name = "template"
@@ -79,6 +79,10 @@ path = "src/day17.rs"
 [[bin]]
 name = "day18"
 path = "src/day18.rs"
+
+[[bin]]
+name = "day19"
+path = "src/day19.rs"
 
 [dependencies]
 cp-rs = { version = "*", path = "../cp-rs" }
