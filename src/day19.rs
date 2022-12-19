@@ -4,7 +4,6 @@ use cp_rs::io::*;
 #[allow(unused_mut)]
 fn main() {
     let mut io = Io::from_file("day19.txt");
-    // let mut io = Io::from_file("test.txt");
     let mut blueprints = vec![];
     for line in io.nums::<usize>().chunks(7) {
         let id = line[0];
@@ -26,9 +25,27 @@ fn main() {
         });
     }
     let mut handles = vec![];
+    let mut handles2 = vec![];
     for (i, mut bp) in blueprints.into_iter().enumerate() {
-        if i >= 3 {
-            break;
+        if i < 3 {
+            let mut bp2 = bp.clone();
+            let handle = std::thread::spawn(move || {
+                (
+                    bp2.find_max_geodes2(State {
+                        ore: 0,
+                        clay: 0,
+                        obsidian: 0,
+                        geode: 0,
+                        iterations: 32,
+                        ore_robots: 1,
+                        clay_robots: 0,
+                        obsidian_robots: 0,
+                        geode_robots: 0,
+                    }),
+                    bp2.id,
+                )
+            });
+            handles2.push(handle);
         }
         let handle = std::thread::spawn(move || {
             (
@@ -37,7 +54,7 @@ fn main() {
                     clay: 0,
                     obsidian: 0,
                     geode: 0,
-                    iterations: 32,
+                    iterations: 24,
                     ore_robots: 1,
                     clay_robots: 0,
                     obsidian_robots: 0,
@@ -56,13 +73,23 @@ fn main() {
         io.writeln(val);
         ress.push(val * id);
     }
-    let res: usize = ress.iter().product();
+    let res: usize = ress.iter().sum();
     io.write("Part 1: ");
     io.writeln(res);
+    let mut ress2 = vec![];
+    for handle in handles2 {
+        let (val, id) = handle.join().unwrap();
+        io.write(id);
+        io.write(" - ");
+        io.writeln(val);
+        ress2.push(val);
+    }
+    let res2: usize = ress2.iter().product();
     io.write("Part 2: ");
-    io.writeln(res);
+    io.writeln(res2);
 }
 
+#[derive(Clone)]
 struct Blueprint {
     id: usize,
     ore_cost: usize,
@@ -75,6 +102,103 @@ struct Blueprint {
 }
 
 impl Blueprint {
+    fn find_max_geodes2(&mut self, state: State) -> usize {
+        if state.iterations == 0 {
+            return state.geode;
+        }
+        if let Some(max) = self.store.get(&state) {
+            return *max;
+        }
+        let mut max = 0;
+        // buying an ore robot
+        if state.iterations >= 17 && state.ore >= self.ore_cost {
+            let val = self.find_max_geodes2(State {
+                ore: state.ore - self.ore_cost + state.ore_robots,
+                clay: state.clay + state.clay_robots,
+                obsidian: state.obsidian + state.obsidian_robots,
+                geode: state.geode + state.geode_robots,
+                iterations: state.iterations - 1,
+                ore_robots: state.ore_robots + 1,
+                clay_robots: state.clay_robots,
+                obsidian_robots: state.obsidian_robots,
+                geode_robots: state.geode_robots,
+            });
+            if val > max {
+                max = val;
+            }
+        }
+        // buying a clay robot
+        if state.iterations >= 13 && state.ore >= self.clay_cost {
+            let val = self.find_max_geodes2(State {
+                ore: state.ore - self.clay_cost + state.ore_robots,
+                clay: state.clay + state.clay_robots,
+                obsidian: state.obsidian + state.obsidian_robots,
+                geode: state.geode + state.geode_robots,
+                iterations: state.iterations - 1,
+                ore_robots: state.ore_robots,
+                clay_robots: state.clay_robots + 1,
+                obsidian_robots: state.obsidian_robots,
+                geode_robots: state.geode_robots,
+            });
+            if val > max {
+                max = val;
+            }
+        }
+        // buying an obsidian robot
+        if state.iterations >= 8
+            && state.ore >= self.obsidian_cost_ore
+            && state.clay >= self.obsidian_cost_clay
+        {
+            let val = self.find_max_geodes2(State {
+                ore: state.ore - self.obsidian_cost_ore + state.ore_robots,
+                clay: state.clay - self.obsidian_cost_clay + state.clay_robots,
+                obsidian: state.obsidian + state.obsidian_robots,
+                geode: state.geode + state.geode_robots,
+                iterations: state.iterations - 1,
+                ore_robots: state.ore_robots,
+                clay_robots: state.clay_robots,
+                obsidian_robots: state.obsidian_robots + 1,
+                geode_robots: state.geode_robots,
+            });
+            if val > max {
+                max = val;
+            }
+        }
+        // buying an geode robot
+        if state.ore >= self.geode_cost_ore && state.obsidian >= self.geode_cost_obsidian {
+            let val = self.find_max_geodes2(State {
+                ore: state.ore - self.geode_cost_ore + state.ore_robots,
+                clay: state.clay + state.clay_robots,
+                obsidian: state.obsidian - self.geode_cost_obsidian + state.obsidian_robots,
+                geode: state.geode + state.geode_robots,
+                iterations: state.iterations - 1,
+                ore_robots: state.ore_robots,
+                clay_robots: state.clay_robots,
+                obsidian_robots: state.obsidian_robots,
+                geode_robots: state.geode_robots + 1,
+            });
+            if val > max {
+                max = val;
+            }
+        }
+        // waiting
+        let val = self.find_max_geodes2(State {
+            ore: state.ore + state.ore_robots,
+            clay: state.clay + state.clay_robots,
+            obsidian: state.obsidian + state.obsidian_robots,
+            geode: state.geode + state.geode_robots,
+            iterations: state.iterations - 1,
+            ore_robots: state.ore_robots,
+            clay_robots: state.clay_robots,
+            obsidian_robots: state.obsidian_robots,
+            geode_robots: state.geode_robots,
+        });
+        if val > max {
+            max = val;
+        }
+        self.store.insert(state, max);
+        max
+    }
     fn find_max_geodes(&mut self, state: State) -> usize {
         if state.iterations == 0 {
             return state.geode;
@@ -84,7 +208,7 @@ impl Blueprint {
         }
         let mut max = 0;
         // buying an ore robot
-        if state.iterations >= 15 && state.ore >= self.ore_cost {
+        if state.iterations >= 11 && state.ore >= self.ore_cost {
             let val = self.find_max_geodes(State {
                 ore: state.ore - self.ore_cost + state.ore_robots,
                 clay: state.clay + state.clay_robots,
@@ -101,7 +225,7 @@ impl Blueprint {
             }
         }
         // buying a clay robot
-        if state.iterations >= 10 && state.ore >= self.clay_cost {
+        if state.iterations >= 8 && state.ore >= self.clay_cost {
             let val = self.find_max_geodes(State {
                 ore: state.ore - self.clay_cost + state.ore_robots,
                 clay: state.clay + state.clay_robots,
@@ -118,7 +242,10 @@ impl Blueprint {
             }
         }
         // buying an obsidian robot
-        if state.iterations >= 4 && state.ore >= self.obsidian_cost_ore && state.clay >= self.obsidian_cost_clay {
+        if state.iterations >= 5
+            && state.ore >= self.obsidian_cost_ore
+            && state.clay >= self.obsidian_cost_clay
+        {
             let val = self.find_max_geodes(State {
                 ore: state.ore - self.obsidian_cost_ore + state.ore_robots,
                 clay: state.clay - self.obsidian_cost_clay + state.clay_robots,
@@ -171,7 +298,7 @@ impl Blueprint {
     }
 }
 
-#[derive(Eq, Hash, PartialEq)]
+#[derive(Eq, Hash, PartialEq, Clone, Copy)]
 struct State {
     ore: usize,
     clay: usize,
