@@ -2,7 +2,7 @@
 name = "aoc"
 version = "0.1.0"
 edition = "2021"
-default-run = "day21"
+default-run = "day22"
 
 [[bin]]
 name = "template"
@@ -92,6 +92,10 @@ path = "src/day20.rs"
 name = "day21"
 path = "src/day21.rs"
 
+[[bin]]
+name = "day22"
+path = "src/day22.rs"
+
 [dependencies]
 cp-rs = { version = "*", path = "../cp-rs" }
 cached = "*"
@@ -162,4 +166,8 @@ harness = false
 
 [[bench]]
 name = "day21"
+harness = false
+
+[[bench]]
+name = "day22"
 harness = false
